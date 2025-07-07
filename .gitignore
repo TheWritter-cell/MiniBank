@@ -1,2 +1,7 @@
 *.exe
 *.db
+.*txt
+.vscode/
+bcrypt/
+test.*
+test*/

@@ -3,7 +3,7 @@
 ## Description
 
 This project is a basic data manager written in C++ using an integrated SQLite database.  
-It allows creating user and admin tables, adding users with unique IDs, and managing passwords through a Python script called from C++. There is not now a GUI but i will add it 
+It allows creating user and admin tables, adding users with unique IDs, and managing passwords through a Python script called from C++. There is not now a GUI but i will add it . It a challenge for me not a special tools who will change the world :)
 
 ## Current Features
 

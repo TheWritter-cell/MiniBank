@@ -10,9 +10,9 @@ def crypt(password:str):
 
 def checkpsw(hash_password:str,password:str):
     if(bcrypt.checkpw(password.encode(),hash_password.encode())):
-        return "1"
-    else:
         return "0"
+    else:
+        return "1"
 
 if __name__=="__main__":
     if sys.argv[1].lower()=="crypt":

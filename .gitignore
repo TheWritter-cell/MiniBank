@@ -5,3 +5,6 @@
 bcrypt/
 test*.*
 test*/
+python_utilities/*.db
+python_utilities/*.cpp
+python_utilities/test*.*

@@ -16,6 +16,59 @@
 
 // Compile with on MinGW64 terminal i'm on windows for linux i don't know
 // g++ datamanager.cpp -o db -I "/c/Program Files (x86)/SQLiteCpp/include" -L "/c/Program Files (x86)/SQLiteCpp/lib" -lSQLiteCpp -lsqlite3 
+template<typename T>
+std::string to_str(const T& val){
+    std::ostringstream oss;
+    oss << val;
+    return oss.str();
+}
+
+// this function will collect argument and return it in string
+// i didn't made it i found it on github
+template<typename... Args>
+std::vector<std::string> collect_args(Args&&... args){
+    return {to_str(std::forward<Args>(args))...};
+}
+/** This function have been made by me after 3days of research so if you found how to ameliorate it
+Please do it because it's realy hard to maintain*/ 
+template<typename... Args>
+std::string execPythonScript(Args&&... args) {
+    std::vector<std::string> arglist = collect_args(std::forward<Args>(args)...);
+    std::size_t nb_args = sizeof...(args);
+    if (nb_args > 3) {
+        assert(false && "Too few arguments; you can only send 3 ");
+    }
+
+    std::array<char, 128> buffer;
+    std::string result;
+    std::ostringstream oss;
+    std::string command = "";
+
+    if (arglist[0] == "crypt" && nb_args == 2) {
+        oss << "python python_tools.py " << arglist[0] << " " << arglist[1];
+        command = oss.str();
+    } else if (arglist[0] == "check" && nb_args == 3) {
+        oss << "python python_tools.py " << arglist[0] << " " << arglist[1] << " " << arglist[2];
+        command = oss.str();
+    } else {
+        return "NONE";
+    }
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("Error during the python execution");
+    }
+
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+
+    if (!result.empty() && result.back() == '\n') {
+        result.pop_back();
+    }
+
+    return result;
+}
 
 class DataManager {
 private:
@@ -65,6 +118,7 @@ public:
 
     // Generate a unique hexadecimal ID (UUID-style)
     std::string generateID() {
+        //take the time as seed for the id
         auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         std::mt19937_64 rng(now);  // 64-bit random number generator
         std::uniform_int_distribution<uint64_t> dist;
@@ -148,59 +202,6 @@ public:
     }
 };
 // This function convert everything into a string i'm proud i made it by myself :)
-template<typename T>
-std::string to_str(const T& val){
-    std::ostringstream oss;
-    oss << val;
-    return oss.str();
-}
-
-// this function will collect argument and return it in string
-// i didn't made it i found it on github
-template<typename... Args>
-std::vector<std::string> collect_args(Args&&... args){
-    return {to_str(std::forward<Args>(args))...};
-}
-/** This function have been made by me after 3days of research so if you found how to ameliorate it
-Please do it because it's realy hard to maintain*/ 
-template<typename... Args>
-std::string execPythonScript(Args&&... args) {
-    std::vector<std::string> arglist = collect_args(std::forward<Args>(args)...);
-    std::size_t nb_args = sizeof...(args);
-    if (nb_args > 3) {
-        assert(false && "Too few arguments; you can only send 3 ");
-    }
-
-    std::array<char, 128> buffer;
-    std::string result;
-    std::ostringstream oss;
-    std::string command = "";
-
-    if (arglist[0] == "crypt" && nb_args == 2) {
-        oss << "python python_tools.py " << arglist[0] << " " << arglist[1];
-        command = oss.str();
-    } else if (arglist[0] == "check" && nb_args == 3) {
-        oss << "python python_tools.py " << arglist[0] << " " << arglist[1] << " " << arglist[2];
-        command = oss.str();
-    } else {
-        return "NONE";
-    }
-
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("Error during the python execution");
-    }
-
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-
-    if (!result.empty() && result.back() == '\n') {
-        result.pop_back();
-    }
-
-    return result;
-}
 
 
 
@@ -210,7 +211,7 @@ int main() {
         DataManager db("database.db");
 
         // Create the Users table
-        db.InsertUser("pak","jioj",2500);
+        db.InsertAdmin("Paja","Pok3xp23_7");
 
     } catch (const std::exception& e) {
         // Handle any exceptions thrown by SQLite

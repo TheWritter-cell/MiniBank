@@ -19,7 +19,7 @@ if __name__=="__main__":
         hash=crypt(sys.argv[2])
         print(str(hash))
     elif sys.argv[1].lower()=="check":
-        result=checkpsw(sys.argv[2],sys.argv[3])
+        result=checkpsw(sys.argv[3],sys.argv[2])
         print(result)
     else:
             print("Unknow operation")

@@ -71,6 +71,8 @@ std::string execPythonScript(Args&&... args) {
     return result;
 }
 
+
+// This will be the only code who will be allowed to change database 
 class DataManager {
 private:
     // SQLite database object
@@ -350,25 +352,5 @@ public:
 
 
 
-int main() {
-    try {
-        // Create the DataManager object and open the database
-        DataManager db("database.db");
-        std::vector<std::string> data = db.check_user_data(
-            "f0c1faacaad4543d-661be9298c709186-fc20ab2a26becc06-c7baed98d89ae7bb",
-            "jordan",
-            "cef8a17a8daf0b34-4decf336a2a3b705-98c68ec8eb7e1cb5-63d42688e1e41c4a"
-        );
 
-        for (const auto& item : data) {
-            std::cout << item << std::endl;
-        }
-
-    } catch (const std::exception& e) {
-        std::cerr << "Fatal Error: " << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
-}
 

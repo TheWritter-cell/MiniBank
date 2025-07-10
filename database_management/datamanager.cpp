@@ -277,7 +277,7 @@ public:
         update.exec();
     }
 
-    else if (transaction == "transfer") {
+    else if (transaction == "transfer" and amount>0) {
         // Vérifier que le receiver existe
         SQLite::Statement receiver_query(db, "SELECT BALANCE FROM USER WHERE id = ?");
         receiver_query.bind(1, possible_receiver);
@@ -308,10 +308,44 @@ public:
         update_receiver.bind(2, possible_receiver);
         update_receiver.exec();
     }
+        return 0;
+    }
+    std::vector<std::string> check_user_data(std::string Admin_id, std::string Admin_psw, std::string User_id) {
+        std::vector<std::string> container;
+        SQLite::Statement query(db, "SELECT PASSWORD FROM ADMIN WHERE id = ?");
+        query.bind(1, Admin_id);
+        std::string psw;
+        if (query.executeStep()) {
+            psw = query.getColumn(0).getString();
+        } else {
+            assert(false && "No Admin found with this ID");
+            return {};  // renvoyer un vecteur vide
+        }
 
-    return 0;
-}
+        std::string checked = execPythonScript("check", psw, Admin_psw);
+        if (checked != "0") {
+            assert(false && "Admin Password doesn't correspond please retry with the right password");
+            return {};
+        }
+
+        SQLite::Statement get(db, "SELECT NAME, BALANCE FROM USER WHERE id = ?");
+        get.bind(1, User_id);
+        try {
+            while (get.executeStep()) {
+                std::string name = get.getColumn(0).getString();
+                std::string balance = to_str(get.getColumn(1).getInt());
+                container.push_back(name);
+                container.push_back(balance);
+            }
+            return container;
+        } catch (std::exception& e) {
+            assert(false && e.what());
+            return {};
+        }
+    }
+
 };
+
 
 
 
@@ -320,16 +354,21 @@ int main() {
     try {
         // Create the DataManager object and open the database
         DataManager db("database.db");
+        std::vector<std::string> data = db.check_user_data(
+            "f0c1faacaad4543d-661be9298c709186-fc20ab2a26becc06-c7baed98d89ae7bb",
+            "jordan",
+            "cef8a17a8daf0b34-4decf336a2a3b705-98c68ec8eb7e1cb5-63d42688e1e41c4a"
+        );
 
-        // Create the Users table
-        db.Update_Balance("f0c1faacaad4543d-661be9298c709186-fc20ab2a26becc06-c7baed98d89ae7bb","jordan","cef8a17a8daf0b34-4decf336a2a3b705-98c68ec8eb7e1cb5-63d42688e1e41c4a","withdraw","120");
-        
+        for (const auto& item : data) {
+            std::cout << item << std::endl;
+        }
 
     } catch (const std::exception& e) {
-        // Handle any exceptions thrown by SQLite
         std::cerr << "Fatal Error: " << e.what() << std::endl;
         return 1;
     }
-    
+
     return 0;
 }
+

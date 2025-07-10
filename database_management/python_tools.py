@@ -9,6 +9,8 @@ def crypt(password:str):
         return "0"
 
 def checkpsw(hash_password:str,password:str):
+    hash_password=hash_password.strip().replace("\n","").replace("\r","")
+    password=password.strip().replace("\n","").replace("\r","")
     if(bcrypt.checkpw(password.encode(),hash_password.encode())):
         return "0"
     else:
@@ -19,7 +21,7 @@ if __name__=="__main__":
         hash=crypt(sys.argv[2])
         print(str(hash))
     elif sys.argv[1].lower()=="check":
-        result=checkpsw(sys.argv[3],sys.argv[2])
+        result=checkpsw(sys.argv[2],sys.argv[3])
         print(result)
     else:
             print("Unknow operation")

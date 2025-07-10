@@ -76,7 +76,7 @@ private:
     // SQLite database object
     SQLite::Database db;
     std::vector<std::string> db_field_USER{"id","NAME","PASSWORD","BALANCE"};
-    std::vector<std::string> possible_transaction{"witdraw","deposit","transfer"};
+    std::vector<std::string> possible_transaction{"withdraw","deposit","transfer"};
     bool checker=false;
 public:
     // Path to the database file
@@ -171,7 +171,8 @@ public:
             assert(false && e.what());
         }
     }
-    int Update_Data(std::string Admin_id,std::string Admin_psw , std::string User_id,std::string field,std::string new_field){
+    int Update_Data(std::string Admin_id,std::string Admin_psw , 
+        std::string User_id,std::string field,std::string new_field){
         bool table_checker=false;
         
         for(auto const element : db_field_USER){
@@ -196,7 +197,7 @@ public:
             assert(false && "No Admin found with this ID");
             return 1;
         }
-        std::string checked=execPythonScript("check",Admin_psw,psw);
+        std::string checked=execPythonScript("check",psw,Admin_psw);
         if(checked=="0"){
             pass;
         }else{
@@ -236,7 +237,7 @@ public:
         assert(false && "No Admin found with this ID");
         return 1;
     }
-    std::string checked = execPythonScript("check", Admin_psw, psw);
+    std::string checked = execPythonScript("check", psw, Admin_psw);
     if (checked != "0") {
         assert(false && "Admin Password doesn't correspond please retry with the right password");
         return 1;
@@ -310,7 +311,6 @@ public:
 
     return 0;
 }
-
 };
 
 
@@ -322,12 +322,7 @@ int main() {
         DataManager db("database.db");
 
         // Create the Users table
-        int result=db.Update_Data("f0c1faacaad4543d-661be9298c709186-fc20ab2a26becc06-c7baed98d89ae7bb","TheBoss","cef8a17a8daf0b34-4decf336a2a3b705-98c68ec8eb7e1cb5-63d42688e1e41c4a","NAME","jordu");
-        if(result==0){
-            std::cout<< "Le nom bien change"<<std::endl;
-        }else{
-            std::cout<< "Le nom n'a pas ete changé"<<std::endl;
-        }
+        db.Update_Balance("f0c1faacaad4543d-661be9298c709186-fc20ab2a26becc06-c7baed98d89ae7bb","jordan","cef8a17a8daf0b34-4decf336a2a3b705-98c68ec8eb7e1cb5-63d42688e1e41c4a","withdraw","120");
         
 
     } catch (const std::exception& e) {

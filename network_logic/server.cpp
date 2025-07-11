@@ -1,42 +1,90 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include "json.hpp"
-#include <ws2tcpip.h>
 #include <winsock2.h>
-#pragma comment(lib, "ws2_32.lib") // link with winsock
+#include <ws2tcpip.h>
+#include "json.hpp"
+#pragma comment(lib, "ws2_32.lib")
 
+using json = nlohmann::json;
 
-using json=nlohmann::json;
+class Server {
+private:
+    int server_port;
+    SOCKET server_socket;
 
-class Server{
-        private:
-            int sever_address;
-            SOCKET server_socket;
-        public:
-            //constructor
-            Server(int server_address){
-            WSADATA wsaData;
-            WSAStartup(MAKEWORD(2, 2), &wsaData); // Initialiser WinSock
-            server_socket=socket(AF_INET, SOCK_STREAM , IPPROTO_TCP);
-            sockaddr_in serveraddr{};
-            serveraddr.sin_family=AF_INET;
-            serveraddr.sin_port=htons(server_address);
-            serveraddr.sin_addr.s_addr=INADDR_ANY;
-            bind(server_socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-            listen(server_socket, SOMAXCONN);
-            };
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            void Stop(){
-                closesocket(server_socket);
+public:
+    Server(int port) : server_port(port) {
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            std::cerr << "WSAStartup failed.\n";
+            exit(1);
+        }
+
+        server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (server_socket == INVALID_SOCKET) {
+            std::cerr << "Socket creation failed.\n";
             WSACleanup();
+            exit(1);
+        }
+
+        sockaddr_in serveraddr{};
+        serveraddr.sin_family = AF_INET;
+        serveraddr.sin_port = htons(server_port);
+        serveraddr.sin_addr.s_addr = INADDR_ANY;
+
+        if (bind(server_socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr)) == SOCKET_ERROR) {
+            std::cerr << "Bind failed.\n";
+            closesocket(server_socket);
+            WSACleanup();
+            exit(1);
+        }
+
+        listen(server_socket, SOMAXCONN);
+        std::cout << "Server started on port " << server_port << "\n";
+    }
+
+    void HandleClient(SOCKET clientSocket) {
+        char buffer[1024];
+        int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+
+        if (bytesReceived > 0) {
+            std::string receivedData(buffer, bytesReceived);
+            std::cout << "Received: " << receivedData << std::endl;
+
+            try {
+                json reponse = {
+                    {"message", "Salut "},
+                    {"status", "ok"}
+                };
+                std::string reponseStr = reponse.dump();
+                send(clientSocket, reponseStr.c_str(), reponseStr.length(), 0);
+            } catch (const json::parse_error& e) {
+                std::cerr << "Erreur de parsing JSON : " << e.what() << "\n";
             }
+        }
+
+        closesocket(clientSocket);
+    }
+
+    void Stop() {
+        closesocket(server_socket);
+        WSACleanup();
+    }
+
+    void start_server() {
+        while (true) {
+            SOCKET client = accept(server_socket, nullptr, nullptr);
+            if (client != INVALID_SOCKET) {
+                std::thread(&Server::HandleClient, this, client).detach(); // pour gérer plusieurs clients
+            }
+        }
+        Stop();
+    }
 };
+
+int main() {
+    Server trys(5000);
+    trys.start_server();
+    return 0;
+}

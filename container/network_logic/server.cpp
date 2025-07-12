@@ -3,16 +3,20 @@
 #include <thread>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <vector>
 #include "json.hpp"
 #pragma comment(lib, "ws2_32.lib")
 
 using json = nlohmann::json;
 
+// Compile with : g++ server.cpp -o sr -lws2_32
+
+
 class Server {
 private:
     int server_port;
     SOCKET server_socket;
-
+    std::vector<int> AdminConnection{5001,5002};
 public:
     Server(int port) : server_port(port) {
         WSADATA wsaData;

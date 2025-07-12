@@ -13,10 +13,10 @@ class Client:
             self.client_socket.connect((self.SERVER_HOST, self.SERVER_PORT))
             query = json.dumps(message).encode('utf-8')
 
-            # ✅ Envoie le message au serveur
+            # send message to the server
             self.client_socket.sendall(query)
 
-            # ✅ Reçoit la réponse du serveur
+            # catch the answer from the server 
             response = self.client_socket.recv(4096)
             response_json = json.loads(response.decode('utf-8'))
 

@@ -80,7 +80,7 @@ public:
         while (true) {
             SOCKET client = accept(server_socket, nullptr, nullptr);
             if (client != INVALID_SOCKET) {
-                std::thread(&Server::HandleClient, this, client).detach(); // pour gérer plusieurs clients
+                std::thread(&Server::HandleClient, this, client).detach(); // take care of multiply clients
             }
         }
         Stop();

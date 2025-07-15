@@ -49,13 +49,14 @@ public:
     }
 
     void HandleClient(SOCKET clientSocket) {
+        std::ofstream file{"wait_1.json"};
         char buffer[1024];
         int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
 
         if (bytesReceived > 0) {
             std::string receivedData(buffer, bytesReceived);
             std::cout << "Received: " << receivedData << std::endl;
-
+            
             try {
                 json reponse = {
                     {"message", "Salut "},
